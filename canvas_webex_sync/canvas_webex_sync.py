@@ -35,7 +35,11 @@ def webex_link_page_content(webexapi,webexteam,group_name,spaces_by_name):
     <ul>
     <li>Group site (Webex Space): <a href="%s">%s</a></li>
     <li>Group Webex meeting: <a href="%s">%s</a> or call %s meeting number %s</li><br/>Note: At least one person may need to login through the group site and start the meeting from there. Try turning off video if you are on a slow Internet link.
-    </ul>""" % (#webex_team_url,webex_team_url,
+    </ul>
+<p>
+  Tip: When connecting to the Webex space click the pulldown in the upper 
+center to show the meeting, whiteboard, messaging, etc.  buttons
+</p>""" % (#webex_team_url,webex_team_url,
         #webex_team_meetingurl,webex_team_meetingurl,webex_team_meetingphone,webex_team_meetingnumber,
         webex_space_url,webex_space_url,
         webex_space_meetingurl,webex_space_meetingurl,webex_space_meetingphone,webex_space_meetingnumber)
