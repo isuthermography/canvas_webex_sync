@@ -49,6 +49,10 @@ def canvas_participants(canvas,course):
     canvpart_by_sortablename={}
     canvpart_by_type={} # dictionary of list of participants
     for enrolled  in course.get_enrollments():
+        if enrolled.user["name"]=="Test Student":
+            # ignore test student account
+            continue
+        
         part = Participant(canvasid=enrolled.user["id"],
                            netid=enrolled.user["login_id"],
                            name=enrolled.user["name"],
@@ -69,10 +73,24 @@ def canvas_participants(canvas,course):
     return (canvpart_by_netid,canvpart_by_canvasid,canvpart_by_sortablename)
 
 
-def canvas_groups(canvas,course,canvpart_by_canvasid):
+def canvas_groups(canvas,course,group_category_name,canvpart_by_canvasid):
+    # Get group categories matching given category name
+    group_categories = [ gc for gc in course.get_group_categories() if gc.name==group_category_name ] 
+    if len(group_categories) < 1:
+        raise ValueError("Group category (Group set) %s not found in course" % (group_category_name))
+    elif len(group_categories) > 1:
+        raise ValueError("Multiple group categories (Group sets) matching %s found in course" % (group_category_name))
+
+    group_category=group_categories[0]
+    
+    
     groups_by_name={}
     
     for cgroup in course.get_groups():
+        # Ignore groups not in our category of interest
+        if cgroup.group_category_id != group_category.id:
+            continue
+        
         part_by_netid={}
         
         for memb in cgroup.get_memberships():

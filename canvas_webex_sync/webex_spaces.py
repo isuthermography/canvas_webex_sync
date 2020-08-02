@@ -58,7 +58,7 @@ def webex_participants(webexapi,email_suffix,webexteam):
             print("Warning: Team member %s does not have ISU email address" % (member.personEmail))
             continue
         
-        participant=WebexParticipant(netid=member.personEmail[:email_suffix_len],
+        participant=WebexParticipant(netid=member.personEmail[:-email_suffix_len],
                                      personId=member.personId,
                                      isModerator=member.isModerator,
                                      team_membership=member)

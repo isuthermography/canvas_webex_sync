@@ -41,7 +41,7 @@ def webex_link_page_content(webexapi,webexteam,group_name,spaces_by_name):
         webex_space_meetingurl,webex_space_meetingurl,webex_space_meetingphone,webex_space_meetingnumber)
     return webexlinks_html
 
-def canvas_webex_sync(canvas, webexapi, email_suffix, course_name):
+def canvas_webex_sync(canvas, webexapi, email_suffix, course_name,canvas_group_category_name):
     course = [c for c in canvas.get_courses() if c.name==course_name][0]
     
     (canvpart_by_netid,
@@ -50,7 +50,7 @@ def canvas_webex_sync(canvas, webexapi, email_suffix, course_name):
     ) = canvas_groups.canvas_participants(canvas,course)
     
     
-    groups_by_name=canvas_groups.canvas_groups(canvas,course,canvpart_by_canvasid)
+    groups_by_name=canvas_groups.canvas_groups(canvas,course,canvas_group_category_name,canvpart_by_canvasid)
     
 
     # look up webex team
@@ -94,16 +94,16 @@ def canvas_webex_sync(canvas, webexapi, email_suffix, course_name):
     
             # Not present in Canvas... remove from Webex
             # ... Erase this user from all spaces with the user
-            for spacename in spaces_by_name:
-                if participant in spaces_by_name[spacename].part_moderator_membership_by_netid:
-                    # Remove from webex
-                    webexapi.memberships.delete(spaces_by_name[spacename].part_moderator_membership_by_netid[participant][2].id)
-                    # Remove from our structure
-                    del spaces_by_name[spacename].part_moderator_membership_by_netid[participant]
-                    pass
-                
-                
-                pass
+            #for spacename in spaces_by_name:
+            #    if participant in spaces_by_name[spacename].part_moderator_membership_by_netid:
+            #        # Remove from webex
+            #        webexapi.memberships.delete(spaces_by_name[spacename].part_moderator_membership_by_netid[participant][2].id)
+            #        # Remove from our structure
+            #        del spaces_by_name[spacename].part_moderator_membership_by_netid[participant]
+            #        pass
+            #    
+            #    
+            #    pass
             
             webexapi.team_memberships.delete(webexpart_by_netid[participant].team_membership.id)
             
@@ -170,10 +170,10 @@ def canvas_webex_sync(canvas, webexapi, email_suffix, course_name):
         for spacename in groups_to_remove_from_webex:
             space = spaces_by_name[spacename]
             # Remove all memberships in this space
-            for spacemember in space.part_moderator_membership_by_netid:
-                (part,moderator,membership)=space.part_moderator_membership_by_netid[spacemember]
-                webexapi.memberships.delete(membership.id)
-                pass
+            #for spacemember in space.part_moderator_membership_by_netid:
+            #    (part,moderator,membership)=space.part_moderator_membership_by_netid[spacemember]
+            #    webexapi.memberships.delete(membership.id)
+            #    pass
             
             # Remove the space
             webexapi.rooms.delete(space.roomId)
@@ -191,8 +191,11 @@ def canvas_webex_sync(canvas, webexapi, email_suffix, course_name):
         for spacename in groups_to_add_to_webex:
             webexapi.rooms.create(spacename,teamId=webexteam.id)
             pass
+        groups_need_link_updates=set(groups_to_add_to_webex)
         pass
-    
+    else:
+        groups_need_link_updates=set([])
+        pass
     
     # Update again
     
@@ -278,7 +281,7 @@ def canvas_webex_sync(canvas, webexapi, email_suffix, course_name):
     
     
 
-    build_webex_links_page=set([])
+    build_webex_links_page=set(groups_need_link_updates)
 
     
 
