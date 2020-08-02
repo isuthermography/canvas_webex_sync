@@ -18,7 +18,7 @@ class Participant(object):
             pass
         pass
     def __repr__(self):
-        return "Participant: \"%s\" <%s@iastate.edu>" % (self.name,self.netid)
+        return "Participant: \"%s\" %s" % (self.name,self.netid)
     pass
 
 

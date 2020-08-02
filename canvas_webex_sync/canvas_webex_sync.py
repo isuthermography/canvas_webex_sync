@@ -41,7 +41,7 @@ def webex_link_page_content(webexapi,webexteam,group_name,spaces_by_name):
         webex_space_meetingurl,webex_space_meetingurl,webex_space_meetingphone,webex_space_meetingnumber)
     return webexlinks_html
 
-def canvas_webex_sync(canvas, webexapi, course_name):
+def canvas_webex_sync(canvas, webexapi, email_suffix, course_name):
     course = [c for c in canvas.get_courses() if c.name==course_name][0]
     
     (canvpart_by_netid,
@@ -67,10 +67,11 @@ def canvas_webex_sync(canvas, webexapi, course_name):
     
     (webexpart_by_netid,
      webexpart_by_personId
-    ) = webex_spaces.webex_participants(webexapi,webexteam)
+    ) = webex_spaces.webex_participants(webexapi,email_suffix,webexteam)
     
 
     spaces_by_name = webex_spaces.webex_spaces(webexapi,
+                                               email_suffix,
                                                webexteam,
                                                webexpart_by_netid)
 
@@ -129,7 +130,7 @@ def canvas_webex_sync(canvas, webexapi, course_name):
         for participant in participants_to_add_to_webex:
             
             
-            mship = webexapi.team_memberships.create(webexteam.id,personEmail="%s@iastate.edu" % (participant),isModerator=canvpart_by_netid[participant].type in frozenset(["TeacherEnrollment","TaEnrollment"]))
+            mship = webexapi.team_memberships.create(webexteam.id,personEmail="%s%s" % (participant,email_suffix),isModerator=canvpart_by_netid[participant].type in frozenset(["TeacherEnrollment","TaEnrollment"]))
             
             pass
         pass
@@ -140,10 +141,11 @@ def canvas_webex_sync(canvas, webexapi, course_name):
     
     (webexpart_by_netid,
      webexpart_by_personId
-    ) = webex_spaces.webex_participants(webexapi,webexteam)
+    ) = webex_spaces.webex_participants(webexapi,email_suffix,webexteam)
     
     
     spaces_by_name = webex_spaces.webex_spaces(webexapi,
+                                               email_suffix,
                                                webexteam,
                                                webexpart_by_netid)
     
@@ -195,6 +197,7 @@ def canvas_webex_sync(canvas, webexapi, course_name):
     # Update again
     
     spaces_by_name = webex_spaces.webex_spaces(webexapi,
+                                               email_suffix,
                                                webexteam,
                                                webexpart_by_netid)
     

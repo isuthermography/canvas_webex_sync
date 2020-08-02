@@ -23,7 +23,7 @@ CANVAS_API_KEY="PUT YOUR CANVAS API KEY HERE"
 webex_access_token="PUT YOUR WEBEX ACCESS TOKEN HERE"
 
 course_name="My Canvas course name"
-
+email_suffix="@iastate.edu" # ... suffix that converts User ID's to email addresses registered with Webex
 
 
 
@@ -40,5 +40,5 @@ webexapi=WebexTeamsAPI(access_token=webex_access_token)
     webexpart_by_netid,
     spaces_by_name,
     staff_set
-) = canvas_webex_sync(canvas, webexapi, course_name)
+) = canvas_webex_sync(canvas, webexapi, email_suffix, course_name)
 

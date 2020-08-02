@@ -41,21 +41,24 @@ class WebexSpace(object):
     
 
 
-def webex_participants(webexapi,webexteam):
+def webex_participants(webexapi,email_suffix,webexteam):
     """webexapi from WebexTeamAPI()
     webexteam an entry from webexapi.teams.list()
 """
+
+    email_suffix_len = len(email_suffix)
+    
     webexpart_by_netid={} # dictionary of participants
     webexpart_by_personId={}
 
     for member in webexapi.team_memberships.list(webexteam.id):
         if member.personDisplayName=="Educonnector.io Reminder Bot":
             continue # ignore Educonnector
-        if not(member.personEmail.endswith("@iastate.edu")):
+        if not(member.personEmail.endswith(email_suffix)):
             print("Warning: Team member %s does not have ISU email address" % (member.personEmail))
             continue
         
-        participant=WebexParticipant(netid=member.personEmail[:-12],
+        participant=WebexParticipant(netid=member.personEmail[:email_suffix_len],
                                      personId=member.personId,
                                      isModerator=member.isModerator,
                                      team_membership=member)
@@ -64,8 +67,9 @@ def webex_participants(webexapi,webexteam):
         pass
     return (webexpart_by_netid,webexpart_by_personId)
 
-def webex_spaces(webexapi,webexteam,webexpart_by_netid):
+def webex_spaces(webexapi,email_suffix,webexteam,webexpart_by_netid):
     spaces_by_name={}
+    email_suffix_len = len(email_suffix)
 
     for wspace in webexapi.rooms.list():
         if wspace.teamId != webexteam.id:
@@ -75,10 +79,10 @@ def webex_spaces(webexapi,webexteam,webexpart_by_netid):
         for memb in webexapi.memberships.list(wspace.id):
             if memb.personDisplayName=="Educonnector.io Reminder Bot" or memb.personEmail.endswith("@webex.bot"):
                 continue # ignore Educonnector and webex bot
-            if not(memb.personEmail.endswith("@iastate.edu")):
-                print("Warning: Space member %s does not have ISU email address" % (memb.personEmail))
+            if not(memb.personEmail.endswith(email_suffix)):
+                print("Warning: Space member %s does not have university email address" % (memb.personEmail))
                 continue
-            memb_netid = memb.personEmail[:-12]
+            memb_netid = memb.personEmail[:-email_suffix_len]
             part_moderator_membership_by_netid[memb_netid]=(webexpart_by_netid[memb_netid],memb.isModerator,memb)
             pass
         space = WebexSpace(name=wspace.title,
