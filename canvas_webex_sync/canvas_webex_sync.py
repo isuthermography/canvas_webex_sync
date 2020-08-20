@@ -45,7 +45,19 @@ center to show the meeting, whiteboard, messaging, etc.  buttons
         webex_space_meetingurl,webex_space_meetingurl,webex_space_meetingphone,webex_space_meetingnumber)
     return webexlinks_html
 
-def canvas_webex_sync(canvas, webexapi, email_suffix, course_name,canvas_group_category_name):
+def canvas_webex_sync(canvas, webexapi, email_suffix, course_name,canvas_group_category_name,ignore_netids=frozenset([]),strip_netids=frozenset([])):
+    """ Sync Canvas groups to Webex team spaces.
+    canvas_webex_sync(canvas, webexapi, email_suffix, course_name,canvas_group_category_name,ignore_netids=frozenset([]),strip_netids=frozenset([]))
+    
+    where:
+      * canvas is the object returned by Canvas(), 
+      * webexapi is the object returned by WebexTeamsAPI()
+      * email_suffix is the suffix you add to the netid to get an email address
+      * course_name is the Canvas course name
+      * canvas_group_category_name is the Canvas group category name for the groups to be synced
+      * ignore_netids is a list or set of netids to ignore (not transfer Canvas -> webex but not remove or mess with in Webex)
+      * strip_netids is a list of netids to strip from the Webex side. 
+"""
     course = [c for c in canvas.get_courses() if c.name==course_name][0]
     
     (canvpart_by_netid,
@@ -81,12 +93,12 @@ def canvas_webex_sync(canvas, webexapi, email_suffix, course_name,canvas_group_c
 
     all_participants = set(canvpart_by_netid.keys()) | set(webexpart_by_netid.keys())
 
-    common_participants = set(canvpart_by_netid.keys()) & set(webexpart_by_netid.keys())
+    common_participants = (set(canvpart_by_netid.keys()) & set(webexpart_by_netid.keys()) ) - set(ignore_netids) - set(strip_netids)
 
 
-    participants_to_remove_from_webex= set(webexpart_by_netid.keys()) - set(canvpart_by_netid.keys())
+    participants_to_remove_from_webex= set(webexpart_by_netid.keys()) - (set(canvpart_by_netid.keys()) - set(strip_netids)) - set(ignore_netids)
 
-    participants_to_add_to_webex = set(canvpart_by_netid.keys()) - set(webexpart_by_netid.keys()) 
+    participants_to_add_to_webex = set(canvpart_by_netid.keys()) - set(webexpart_by_netid.keys()) - set(strip_netids) - set(ignore_netids)
     
 
     
@@ -219,9 +231,9 @@ def canvas_webex_sync(canvas, webexapi, email_suffix, course_name,canvas_group_c
     # All course staff should be listed as member/moderator of all
     # teams in webex
     
-    staff_set = set([participant for participant in webexpart_by_netid if webexpart_by_netid[participant].isModerator ])
+    staff_set = set([participant for participant in webexpart_by_netid if webexpart_by_netid[participant].isModerator ]) - set(ignore_netids) - set(strip_netids)
 
-    canvas_members_plus_staff_by_group = { group_name: set(groups_by_name[group_name].part_by_netid.keys()) | staff_set for group_name in common_groups }
+    canvas_members_plus_staff_by_group = { group_name: (set(groups_by_name[group_name].part_by_netid.keys()) | staff_set) - set(ignore_netids) - set(strip_netids)  for group_name in common_groups }
 
 
     # Update webex space memberships
@@ -229,7 +241,7 @@ def canvas_webex_sync(canvas, webexapi, email_suffix, course_name,canvas_group_c
 
     webex_add_members_by_group = { group_name: canvas_members_plus_staff_by_group[group_name] - set(spaces_by_name[group_name].part_moderator_membership_by_netid.keys())  for group_name in common_groups }
 
-    webex_remove_members_by_group = { group_name: set(spaces_by_name[group_name].part_moderator_membership_by_netid.keys()) - canvas_members_plus_staff_by_group[group_name] for group_name in common_groups }
+    webex_remove_members_by_group = { group_name: set(spaces_by_name[group_name].part_moderator_membership_by_netid.keys()) - (canvas_members_plus_staff_by_group[group_name]-set(strip_netids)) - set(ignore_netids) for group_name in common_groups }
 
     print("Group membership removals")
     print("-------------------------")
