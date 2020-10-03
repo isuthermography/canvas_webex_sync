@@ -41,7 +41,7 @@ class WebexSpace(object):
     
 
 
-def webex_participants(webexapi,email_suffix,webexteam):
+def webex_participants(webexapi,email_suffix,webexteam,ignore_netids,strip_netids):
     """webexapi from WebexTeamAPI()
     webexteam an entry from webexapi.teams.list()
 """
@@ -65,7 +65,10 @@ def webex_participants(webexapi,email_suffix,webexteam):
         webexpart_by_netid[participant.netid]=participant
         webexpart_by_personId[participant.personId]=participant
         pass
-    return (webexpart_by_netid,webexpart_by_personId)
+
+    staff_set = set([participant for participant in webexpart_by_netid if webexpart_by_netid[participant].isModerator ]) - set(ignore_netids) - set(strip_netids)
+
+    return (webexpart_by_netid,webexpart_by_personId,staff_set)
 
 def webex_spaces(webexapi,email_suffix,webexteam,webexpart_by_netid):
     spaces_by_name={}

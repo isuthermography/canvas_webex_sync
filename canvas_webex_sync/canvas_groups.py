@@ -72,6 +72,14 @@ def canvas_participants(canvas,course):
         pass
     return (canvpart_by_netid,canvpart_by_canvasid,canvpart_by_sortablename)
 
+def course_by_name(canvas,course_name):
+    matching_courses = [c for c in canvas.get_courses() if c.name==course_name]
+
+    if len(matching_courses) != 1:
+        raise ValueError("List of courses matching \"%s\" has length %d not 1" % (course_name,len(matching_courses)))
+    
+    course = matching_courses[0]
+    return course
 
 def canvas_groups(canvas,course,group_category_name,canvpart_by_canvasid):
     # Get group categories matching given category name
